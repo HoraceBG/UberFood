@@ -2,13 +2,15 @@ package com.horaceb.newsreader.ui.fragment;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
 
 import com.horaceb.newsreader.R;
+import com.horaceb.newsreader.data.model.RSS;
+import com.horaceb.newsreader.data.task.ArticleTask;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -17,8 +19,10 @@ import org.jsoup.parser.Parser;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
-import data.model.RSS;
-import data.task.ArticleTask;
+
+import static com.horaceb.newsreader.data.HTMLConstants.HTML_MIME_TYPE;
+import static com.horaceb.newsreader.data.HTMLConstants.IMG_TAG;
+import static com.horaceb.newsreader.data.HTMLConstants.UTF_8;
 
 
 /**
@@ -26,8 +30,8 @@ import data.task.ArticleTask;
  */
 public class ArticleFragment extends BaseFragment implements ArticleTask.ArticleResultListener {
 
-    @InjectView(R.id.article_text)
-    TextView articleText;
+    @InjectView(R.id.article_view)
+    WebView articleText;
 
     public ArticleFragment() {
         // Default empty constructor
@@ -38,6 +42,15 @@ public class ArticleFragment extends BaseFragment implements ArticleTask.Article
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_article, container, false);
         ButterKnife.inject(this, view);
+        WebSettings settings = articleText.getSettings();
+        settings.setDefaultTextEncodingName(UTF_8);
+        settings.setLoadsImagesAutomatically(true);
+        settings.setUseWideViewPort(true);
+        settings.setLoadWithOverviewMode(true);
+        settings.setTextZoom(300);
+
+        settings.setJavaScriptEnabled(true);
+
         return view;
     }
 
@@ -67,10 +80,11 @@ public class ArticleFragment extends BaseFragment implements ArticleTask.Article
     public void handleSuccess(RSS articles) {
         String content = articles.getChannel().getArticleList().get(4).getContent();
         Document document = Jsoup.parse(content, "", Parser.xmlParser());
-        Element heroImage = document.select("img").first();
-        document.select("img").first().remove();
-        String s = document.toString();
-        articleText.setText(Html.fromHtml(s));
+        Element heroImage = document.select(IMG_TAG).first();
+        document.select(IMG_TAG).first().remove();
+        String html = document.toString();
+
+        articleText.loadDataWithBaseURL(null, html, HTML_MIME_TYPE, UTF_8, null);
     }
 
     @Override

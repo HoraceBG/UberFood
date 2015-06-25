@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">UberFood</string>
+    <string name="no_restaurants_found">No restaurants found. Try expanding your search</string>
+    <string name="open">Open</string>
+    <string name="closed">Closed</string>
+    <string name="rating">Rating: 1%s</string>
+    <string name="uber">Get an Uber</string>
 </resources>
